@@ -15,6 +15,8 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
 from telegram.ext import ApplicationBuilder, CallbackQueryHandler, CommandHandler, ContextTypes
 
+load_dotenv()
+
 MAX_LOG_SIZE = 10_000_000
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 LOG_FORMAT_RICH = "%(message)s"
@@ -37,8 +39,6 @@ logging.basicConfig(
         RotatingFileHandler(LOG_PATH, maxBytes=MAX_LOG_SIZE, backupCount=5),
     ],
 )
-
-load_dotenv()
 
 QUESTION_ID = str
 QUESTION = str
