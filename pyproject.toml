@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "bible-flashcard-telegram-bot"
+version = "0.1.0"
+description = "Telegram bot for bible related flash cards"
+authors = ["Nick Muoh <nickspirit3+github@gmail.com>"]
+readme = "README.md"
+packages = [{include = "telegram_bot.py"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+python-telegram-bot = "^20.0"
+python-dotenv = "^0.21.1"
+aiogoogle = "^5.1.0"
+rich = "^13.3.1"
+
+[tool.poetry.group.dev.dependencies]
+watchgod = "^0.8.2"
+
+[tool.poetry.scripts]
+mbfc-bot = "telegram_bot:main"
+
+[tool.mypy]
+python_version = 3.11
+python_executable = "./.venv/bin/python"
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

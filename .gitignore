@@ -1,0 +1,10 @@
+# Python
+.venv/
+.mypy_cache/
+__pycache__/
+.env
+.python-version
+*.log
+
+# IDE
+.vscode/
