@@ -16,10 +16,12 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
 from telegram.ext import ApplicationBuilder, CallbackQueryHandler, CommandHandler, ContextTypes
 
+MAX_LOG_SIZE = 10_000_000
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 LOG_FORMAT_RICH = "%(message)s"
-MAX_LOG_SIZE = 10_000_000
-LOG_PATH = Path("mbfc-telegram-bot.log")
+LOG_DIR = Path("logs")
+LOG_DIR.mkdir(exist_ok=True)
+LOG_PATH = LOG_DIR / Path("mbfc-telegram-bot.log")
 LOG_PATH.touch(exist_ok=True)
 
 rich_handler = RichHandler(

@@ -2,9 +2,10 @@
 .venv/
 .mypy_cache/
 __pycache__/
+logs/*
 .env
 .python-version
-*.log
+
 
 # IDE
 .vscode/
