@@ -7,7 +7,6 @@ from pathlib import Path
 from logging import Formatter
 from logging.handlers import RotatingFileHandler
 
-import watchgod
 from aiogoogle import Aiogoogle
 from dotenv import load_dotenv
 from rich.logging import RichHandler
@@ -25,7 +24,7 @@ LOG_PATH = LOG_DIR / Path("mbfc-telegram-bot.log")
 LOG_PATH.touch(exist_ok=True)
 
 rich_handler = RichHandler(
-    rich_tracebacks=True, tracebacks_suppress=[watchgod], console=Console(stderr=True)
+    rich_tracebacks=True, tracebacks_suppress=["watchgod"], console=Console(stderr=True)
 )
 
 rich_handler.setFormatter(Formatter(LOG_FORMAT_RICH))
