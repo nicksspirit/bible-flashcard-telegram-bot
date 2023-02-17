@@ -57,6 +57,23 @@ MULTIPLE_ANS_REGEX = re.compile(r"(?P<ol>[a-z]\.)(?P<li>\s.+)", re.MULTILINE)
 logger = logging.getLogger(__name__)
 
 
+def format_question_answer(qid: str, question: str, answer: str):
+    def escape_chars(string: str):
+        return string.replace("[", "*[").replace("]", "]*").replace(".", "\.").replace("-", "\-")
+
+    def hide_answer(ans: str):
+        return MULTIPLE_ANS_REGEX.sub("\g<1> ||\g<2>||\n", ans)
+
+    def answer_block(ans: str):
+        return "\n" "\n" "*Answer:*" "\n" "\n" f"{escape_chars(ans)}"
+
+    template = (
+        f"__Q{qid}:__" "\n" f"{escape_chars(question)}" f"{answer_block(answer) if answer else ''}"
+    )
+
+    return template
+
+
 async def fetch_random_question() -> SheetRow:
     async with Aiogoogle(api_key=SHEETS_API_KEY) as aiogoogle:
         sheets_svc = await aiogoogle.discover("sheets", "v4")
@@ -75,10 +92,6 @@ async def fetch_random_question() -> SheetRow:
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # if not update:
-    #     logger.error("No chat update message")
-    #     return
-
     start_msg = dedent(
         """
         Hello 👋🏾 \! I am your friendly flash card bot\.
@@ -89,24 +102,9 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
     )
 
+    logger.info("User issued START command")
+
     await update.message.reply_text(start_msg, parse_mode=ParseMode.MARKDOWN_V2)
-
-
-def format_question_answer(qid: str, question: str, answer: str):
-    def escape_chars(string: str):
-        return string.replace("[", "*[").replace("]", "]*").replace(".", "\.").replace("-", "\-")
-
-    def hide_answer(ans: str):
-        return MULTIPLE_ANS_REGEX.sub("\g<1> ||\g<2>||\n", ans)
-
-    def answer_block(ans: str):
-        return "\n" "\n" "*Answer:*" "\n" "\n" f"{escape_chars(ans)}"
-
-    template = (
-        f"__Q{qid}:__" "\n" f"{escape_chars(question)}" f"{answer_block(answer) if answer else ''}"
-    )
-
-    return template
 
 
 async def question(update: Update, context: ContextTypes.DEFAULT_TYPE):
