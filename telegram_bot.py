@@ -107,7 +107,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(start_msg, parse_mode=ParseMode.MARKDOWN_V2)
 
 
-async def question(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def question_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if context.chat_data is None:
         logger.error("Chat data context does not exist!")
         return
@@ -155,7 +155,7 @@ def main():
     telegram_app = ApplicationBuilder().token(TOKEN).build()
 
     start_handler = CommandHandler("start", start_command)
-    question_handler = CommandHandler("question", question)
+    question_handler = CommandHandler("question", question_command)
 
     telegram_app.add_handler(start_handler)
     telegram_app.add_handler(CallbackQueryHandler(reveal_answer_btn))
