@@ -9,8 +9,6 @@ from logging.handlers import RotatingFileHandler
 
 from aiogoogle import Aiogoogle
 from dotenv import load_dotenv
-from rich.logging import RichHandler
-from rich.console import Console
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
 from telegram.ext import ApplicationBuilder, CallbackQueryHandler, CommandHandler, ContextTypes
@@ -19,7 +17,6 @@ load_dotenv()
 
 MAX_LOG_SIZE = 10_000_000
 LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-LOG_FORMAT_RICH = "%(message)s"
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
 LOG_PATH = LOG_DIR / Path("mbfc-telegram-bot.log")
@@ -32,13 +29,11 @@ rich_handler = RichHandler(
     console=Console(stderr=True),
 )
 
-rich_handler.setFormatter(Formatter(LOG_FORMAT_RICH))
 
 logging.basicConfig(
     level="INFO",
     format=LOG_FORMAT,
     handlers=[
-        rich_handler,
         RotatingFileHandler(LOG_PATH, maxBytes=MAX_LOG_SIZE, backupCount=5),
     ],
 )
