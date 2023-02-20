@@ -1,56 +1,23 @@
 import logging
-import os
 import random
 import re
 from textwrap import dedent
-from pathlib import Path
-from logging import Formatter
-from logging.handlers import RotatingFileHandler
 
 from aiogoogle import Aiogoogle
-from dotenv import load_dotenv
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ParseMode
 from telegram.ext import ApplicationBuilder, CallbackQueryHandler, CommandHandler, ContextTypes
 
-load_dotenv()
-
-MAX_LOG_SIZE = 10_000_000
-LOG_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-LOG_DIR = Path("logs")
-LOG_DIR.mkdir(exist_ok=True)
-LOG_PATH = LOG_DIR / Path("mbfc-telegram-bot.log")
-LOG_PATH.touch(exist_ok=True)
-
-rich_handler = RichHandler(
-    rich_tracebacks=True,
-    tracebacks_show_locals=True,
-    tracebacks_suppress=["watchgod"],
-    console=Console(stderr=True),
-)
-
-
-logging.basicConfig(
-    level="INFO",
-    format=LOG_FORMAT,
-    handlers=[
-        RotatingFileHandler(LOG_PATH, maxBytes=MAX_LOG_SIZE, backupCount=5),
-    ],
-)
+import config
 
 QUESTION_ID = str
 QUESTION = str
 ANSWER = str
 SheetRow = tuple[QUESTION_ID, QUESTION, ANSWER]
 
-TOKEN = os.getenv("TELEGRAM_TOKEN")
-SHEETS_API_KEY = os.getenv("GOOGLE_SHEETS_API_KEY")
-GOOGLE_SHEETS_ID = os.getenv("GOOGLE_SHEETS_ID")
-
 MULTIPLE_ANS_REGEX = re.compile(r"(?P<ol>[a-z]\.)(?P<li>\s.+)", re.MULTILINE)
 
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger(f"{config.APP_NAME}.{__name__}")
 
 def format_question_answer(qid: str, question: str, answer: str):
     def escape_chars(string: str):
@@ -70,11 +37,13 @@ def format_question_answer(qid: str, question: str, answer: str):
 
 
 async def fetch_random_question() -> SheetRow:
-    async with Aiogoogle(api_key=SHEETS_API_KEY) as aiogoogle:
+    logger.info("Fetching random question from spreadsheet.")
+
+    async with Aiogoogle(api_key=config.SHEETS_API_KEY) as aiogoogle:
         sheets_svc = await aiogoogle.discover("sheets", "v4")
         spreadsheets = sheets_svc.spreadsheets
 
-        reqs = (spreadsheets.values.get(spreadsheetId=GOOGLE_SHEETS_ID, range="'Q&A'!A2:C"),)
+        reqs = (spreadsheets.values.get(spreadsheetId=config.GOOGLE_SHEETS_ID, range="'Q&A'!A2:C"),)
         result = await aiogoogle.as_api_key(*reqs)
 
         values: list[SheetRow] = result["values"]
@@ -147,7 +116,7 @@ def main():
     """
     Run the bot
     """
-    telegram_app = ApplicationBuilder().token(TOKEN).build()
+    telegram_app = ApplicationBuilder().token(config.TOKEN).build()
 
     start_handler = CommandHandler("start", start_command)
     question_handler = CommandHandler("question", question_command)
@@ -160,6 +129,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # if TOKEN is None:
-    #     raise ValueError("Telegram Token is not set.")
     main()
