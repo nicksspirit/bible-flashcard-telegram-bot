@@ -55,6 +55,7 @@ def escape_chars(string: str) -> str:
     )
 
 
+
 def answer_block(ans: str) -> str:
     return f"\n\n*Answer:*\n\n{escape_chars(ans)}"
 
