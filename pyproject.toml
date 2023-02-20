@@ -11,6 +11,7 @@ python = "^3.10"
 python-telegram-bot = "^20.0"
 python-dotenv = "^0.21.1"
 aiogoogle = "^5.1.0"
+pretty-errors = "^1.2.25"
 
 [tool.poetry.group.dev.dependencies]
 watchgod = "^0.8.2"
