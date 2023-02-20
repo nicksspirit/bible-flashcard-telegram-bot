@@ -19,21 +19,27 @@ MULTIPLE_ANS_REGEX = re.compile(r"(?P<ol>[a-z]\.)(?P<li>\s.+)", re.MULTILINE)
 
 logger = logging.getLogger(f"{config.APP_NAME}.{__name__}")
 
-def format_question_answer(qid: str, question: str, answer: str):
-    def escape_chars(string: str):
-        return string.replace("[", "*[").replace("]", "]*").replace(".", "\.").replace("-", "\-")
 
-    def hide_answer(ans: str):
-        return MULTIPLE_ANS_REGEX.sub("\g<1> ||\g<2>||\n", ans)
+def hide_answer(ans: str) -> str:
+    return MULTIPLE_ANS_REGEX.sub("\g<1> ||\g<2>||\n", ans)
 
-    def answer_block(ans: str):
-        return "\n" "\n" "*Answer:*" "\n" "\n" f"{escape_chars(ans)}"
 
-    template = (
-        f"__Q{qid}:__" "\n" f"{escape_chars(question)}" f"{answer_block(answer) if answer else ''}"
+def escape_chars(string: str) -> str:
+    return (
+        string.replace("[", "*[")
+        .replace("]", "]*")
+        .replace(".", "\.")
+        .replace("-", "\-")
+        .replace("+", "\+")
     )
 
-    return template
+
+def answer_block(ans: str):
+    return f"\n\n*Answer:*\n\n{escape_chars(ans)}"
+
+
+def question_block(qid: str, question: str):
+    return f"__Q{qid}:__\n{escape_chars(question)}"
 
 
 async def fetch_random_question() -> SheetRow:
@@ -49,13 +55,16 @@ async def fetch_random_question() -> SheetRow:
         values: list[SheetRow] = result["values"]
 
         qid, question, answer = random.choice(
-            [(qid, question, answer) for qid, question, answer in values]
+            [(qid, question, answer) for qid, question, answer in values if qid == "25"]
         )
+
+        logger.debug(f"Retrieved Question {qid}")
 
         return qid, question, answer
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     start_msg = dedent(
         """
         Hello 👋🏾 \! I am your friendly flash card bot\.
@@ -66,36 +75,40 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
     )
 
-    logger.info("User issued START command")
+    logger.info(f"User ({context._user_id}) issued START command.")
 
-    await update.message.reply_text(start_msg, parse_mode=ParseMode.MARKDOWN_V2)
+    await update.message.reply_markdown_v2(start_msg)
 
 
 async def question_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info("User issued QUESTION command")
+
     if context.chat_data is None:
-        logger.error("Chat data context does not exist!")
+        logger.error("{chat_data} does not exist in chat update event!")
         return
 
     qid, question, answer = await fetch_random_question()
-
     context.chat_data[qid] = (question, answer)
+    question_block_ = question_block(qid, question)
 
     reply_markup = InlineKeyboardMarkup(
         [[InlineKeyboardButton(text="Reveal Answer", callback_data=qid)]]
     )
 
-    fmt_question = format_question_answer(qid, question, "")
-
-    await update.message.reply_text(
-        fmt_question, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN_V2
-    )
+    await update.message.reply_markdown_v2(question_block_, reply_markup=reply_markup)
 
 
 async def reveal_answer_btn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handles callback event when reveal answer button is clicked"""
 
+    logger.info("User clicked REVEAL ANSWER button")
+
     if not context.chat_data:
-        logger.error("Chat data context does not exist!")
+        logger.error("{chat_data} does not exist in chat update event!")
+        return
+
+    if not update.effective_message:
+        logger.error("{effective_message} does not exist in chat update event!")
         return
 
     query = update.callback_query
@@ -106,10 +119,40 @@ async def reveal_answer_btn(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 
     qid = query.data
     question, answer = context.chat_data[qid]
+    question_block_ = question_block(qid, question)
 
-    fmt_question = format_question_answer(qid, question, answer)
+    if MULTIPLE_ANS_REGEX.match(answer):
+        logger.debug(f"Question {qid} has multiple answers.")
 
-    await query.edit_message_text(text=fmt_question, parse_mode=ParseMode.MARKDOWN_V2)
+        answers = answer.split("\n")
+        question_answer_txt = question_block_ + answer_block("You ready? Here are the answers:")
+
+        await query.edit_message_text(text=question_answer_txt, parse_mode=ParseMode.MARKDOWN_V2)
+
+        for ans in answers:
+            hidden_ans = escape_chars(hide_answer(ans))
+            await update.effective_message.reply_markdown_v2(hidden_ans)
+
+    else:
+        logger.debug(f"Question {qid} has a single answer.")
+
+        question_answer_txt = question_block_ + answer_block(answer)
+        await query.edit_message_text(text=question_answer_txt, parse_mode=ParseMode.MARKDOWN_V2)
+    
+    logger.info(f"Revealing answer(s) to question {qid} button.")
+
+    reply_markup = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(text="Yes", callback_data=f"{qid}:yes"),
+                InlineKeyboardButton(text="No", callback_data=f"{qid}:no"),
+            ]
+        ]
+    )
+
+    await update.effective_message.reply_text(
+        "Did you get the question correct?", reply_markup=reply_markup
+    )
 
 
 def main():
