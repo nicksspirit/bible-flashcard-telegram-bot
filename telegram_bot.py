@@ -55,7 +55,6 @@ def escape_chars(string: str) -> str:
     )
 
 
-
 def answer_block(ans: str) -> str:
     return f"\n\n*Answer:*\n\n{escape_chars(ans)}"
 
@@ -78,8 +77,11 @@ async def fetch_random_question() -> SheetRow:
 
         values: list[SheetRow] = result["values"]
 
+        start_range = int(config.NUM_QUESTIONS[0])
+        end_range = int(config.NUM_QUESTIONS[1]) + 1
+
         qid, question, answer = random.choice(
-            [(qid, question, answer) for qid, question, answer in values][:5]
+            [(qid, question, answer) for qid, question, answer in values][start_range:end_range]
         )
 
         logger.debug(f"Retrieved question from sheet {QA_ID}.")
