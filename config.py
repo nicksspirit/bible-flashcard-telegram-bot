@@ -3,6 +3,7 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
+from typing import TypedDict
 
 import pretty_errors as perr
 from aiogoogle.auth.creds import ServiceAccountCreds
@@ -19,14 +20,11 @@ APP_NAME = "mbfc"
 MAX_LOG_SIZE = 10_000_000
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
-QA_SET_ID = os.getenv("QA_SET_ID", "ADV-1")
-NUM_QUESTIONS = os.getenv("NUM_QUESTIONS", "0-5").split("-")
 GOOGLE_SHEETS_ID = os.getenv("GOOGLE_SHEETS_ID")
 GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "dev")
 
 _gcp_sa_credentials = json.loads(GOOGLE_APPLICATION_CREDENTIALS)
-
 SA_CREDS = ServiceAccountCreds(
     scopes=["https://www.googleapis.com/auth/spreadsheets"], **_gcp_sa_credentials
 )
@@ -48,3 +46,7 @@ logging.basicConfig(
         RotatingFileHandler(LOG_PATH, maxBytes=MAX_LOG_SIZE, backupCount=5),
     ],
 )
+
+class AdminConfig(TypedDict):
+    question_range: str
+    question_set: str

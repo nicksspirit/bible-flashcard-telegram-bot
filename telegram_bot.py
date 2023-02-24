@@ -3,6 +3,7 @@ import random
 import re
 from enum import Enum
 from textwrap import dedent
+from typing import cast
 
 from aiogoogle import Aiogoogle
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
@@ -22,7 +23,7 @@ QUESTION = str
 ANSWER = str
 SheetRow = tuple[QUESTION_ID, QUESTION, ANSWER]
 
-QA_ID = config.QA_SET_ID
+QA_ID = "ADV-1"
 ANSWER_STATE = 0
 FEEDBACK_STATE = 1
 MULTIPLE_ANS_REGEX = re.compile(r"(?P<ol>[a-z]\.)(?P<li>\s.+)", re.MULTILINE)
@@ -64,27 +65,44 @@ def question_block(qid: str, question: str) -> str:
 
 
 async def fetch_random_question() -> SheetRow:
-    logger.info(f"Fetching random question from sheet {QA_ID}.")
-
+    global QA_ID
+    
     async with Aiogoogle(service_account_creds=config.SA_CREDS) as aiogoogle:
         sheets_svc = await aiogoogle.discover("sheets", "v4")
         spreadsheets = sheets_svc.spreadsheets
 
         reqs = (
-            spreadsheets.values.get(spreadsheetId=config.GOOGLE_SHEETS_ID, range=f"'{QA_ID}'!A2:C"),
+            spreadsheets.values.get(spreadsheetId=config.GOOGLE_SHEETS_ID, range=f"'Admin'!A1:C"),
         )
         result = await aiogoogle.as_service_account(*reqs)
-
-        values: list[SheetRow] = result["values"]
-
-        start_range = int(config.NUM_QUESTIONS[0])
-        end_range = int(config.NUM_QUESTIONS[1]) + 1
-
-        qid, question, answer = random.choice(
-            [(qid, question, answer) for qid, question, answer in values][start_range:end_range]
+        admin_config = cast(
+            config.AdminConfig, {config_name: value for config_name, value in result["values"]}
         )
 
-        logger.debug(f"Retrieved question from sheet {QA_ID}.")
+        QA_ID = admin_config["question_set"]
+
+        logger.info(f"Fetching random question from sheet {QA_ID}.")
+
+        min_qid, max_qid = [
+            int(qid.strip()) + 1 for qid in admin_config["question_range"].split("-")
+        ]
+
+        reqs = (
+            spreadsheets.values.get(
+                spreadsheetId=config.GOOGLE_SHEETS_ID, range=f"'{QA_ID}'!A{min_qid}:C{max_qid}"
+            ),
+        )
+
+        result = await aiogoogle.as_service_account(*reqs)
+        questions: list[SheetRow] = result["values"]
+
+        logger.debug(f"Retrieved question {min_qid} to {max_qid} from sheet {QA_ID}.")
+
+        qid, question, answer = random.choice(
+            [(qid, question, answer) for qid, question, answer in questions]
+        )
+
+        logger.debug(f"Randomly picked question {qid} from sheet {QA_ID}.")
 
         return qid, question, answer
 
