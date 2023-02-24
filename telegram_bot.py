@@ -66,10 +66,12 @@ def question_block(qid: str, question: str) -> str:
 
 async def fetch_random_question() -> SheetRow:
     global QA_ID
-    
+
     async with Aiogoogle(service_account_creds=config.SA_CREDS) as aiogoogle:
         sheets_svc = await aiogoogle.discover("sheets", "v4")
         spreadsheets = sheets_svc.spreadsheets
+        
+        logger.info(f"Fetching admin configuration from spreadsheet.")
 
         reqs = (
             spreadsheets.values.get(spreadsheetId=config.GOOGLE_SHEETS_ID, range=f"'Admin'!A1:C"),
@@ -80,13 +82,10 @@ async def fetch_random_question() -> SheetRow:
         )
 
         QA_ID = admin_config["question_set"]
-
-        logger.info(f"Fetching random question from sheet {QA_ID}.")
-
         min_qid, max_qid = [
             int(qid.strip()) + 1 for qid in admin_config["question_range"].split("-")
         ]
-
+        
         reqs = (
             spreadsheets.values.get(
                 spreadsheetId=config.GOOGLE_SHEETS_ID, range=f"'{QA_ID}'!A{min_qid}:C{max_qid}"
@@ -96,13 +95,13 @@ async def fetch_random_question() -> SheetRow:
         result = await aiogoogle.as_service_account(*reqs)
         questions: list[SheetRow] = result["values"]
 
-        logger.debug(f"Retrieved question {min_qid} to {max_qid} from sheet {QA_ID}.")
+        logger.info(f"Retrieved questions {min_qid} to {max_qid} from sheet {QA_ID}.")
 
         qid, question, answer = random.choice(
             [(qid, question, answer) for qid, question, answer in questions]
         )
 
-        logger.debug(f"Randomly picked question {qid} from sheet {QA_ID}.")
+        logger.info(f"Randomly picked question {qid} from sheet {QA_ID}.")
 
         return qid, question, answer
 
