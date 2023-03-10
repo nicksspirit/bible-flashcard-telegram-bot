@@ -5,14 +5,10 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import TypedDict
 
-import pretty_errors as perr
 from aiogoogle.auth.creds import ServiceAccountCreds
 from dotenv import load_dotenv
 
-if not perr.terminal_is_interactive:
-    perr.mono()
 
-perr.configure(infix="\n⬆️", display_link=True, line_number_first=False)
 
 load_dotenv()
 

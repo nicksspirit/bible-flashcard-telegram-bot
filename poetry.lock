@@ -251,18 +251,6 @@ files = [
 unicode-backport = ["unicodedata2"]
 
 [[package]]
-name = "colorama"
-version = "0.4.6"
-description = "Cross-platform colored terminal text."
-category = "main"
-optional = false
-python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
-files = [
-    {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
-    {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
-]
-
-[[package]]
 name = "frozenlist"
 version = "1.3.3"
 description = "A list-like structure which implements collections.abc.MutableSequence"
@@ -526,21 +514,6 @@ files = [
 ]
 
 [[package]]
-name = "pretty-errors"
-version = "1.2.25"
-description = "Prettifies Python exception output to make it legible."
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "pretty_errors-1.2.25-py3-none-any.whl", hash = "sha256:8ce68ccd99e0f2a099265c8c1f1c23b7c60a15d69bb08816cb336e237d5dc983"},
-    {file = "pretty_errors-1.2.25.tar.gz", hash = "sha256:a16ba5c752c87c263bf92f8b4b58624e3b1e29271a9391f564f12b86e93c6755"},
-]
-
-[package.dependencies]
-colorama = "*"
-
-[[package]]
 name = "pyasn1"
 version = "0.4.8"
 description = "ASN.1 types and codecs"
@@ -781,4 +754,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f31e2190295f025d222a3f2a8821ab099c37eb99b650d6cd9e0a056d2ff8e868"
+content-hash = "ef78f40caf7e07f53be9064f6a40810a29ab372b98174fe7cd1285b1f0c9fe0a"
