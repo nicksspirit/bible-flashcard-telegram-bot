@@ -255,7 +255,7 @@ async def answer_yes_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"User ({context._user_id}) clicked YES button to question {qid} from sheet {QA_ID}."
     )
 
-    await update.effective_message.reply_text("Oh! That's awesome. Great job!")
+    await query.edit_message_text("Oh! That's awesome. Great job! 👍🏾")
 
     reply_timestamp = update.effective_message.date.timestamp()
     user_id = context._user_id
@@ -282,7 +282,7 @@ async def answer_no_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"User ({context._user_id}) clicked NO button to question {qid} from sheet {QA_ID}."
     )
 
-    await update.effective_message.reply_text("Oh no! Keep at it. You will get it right next time.")
+    await query.edit_message_text("Oh no! Keep at it 💪🏾. You will get it right next time.")
 
     reply_timestamp = update.effective_message.date.timestamp()
     user_id = context._user_id
