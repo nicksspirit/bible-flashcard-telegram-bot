@@ -70,11 +70,11 @@ async def fetch_random_question() -> SheetRow:
     async with Aiogoogle(service_account_creds=config.SA_CREDS) as aiogoogle:
         sheets_svc = await aiogoogle.discover("sheets", "v4")
         spreadsheets = sheets_svc.spreadsheets
-        
-        logger.info(f"Fetching admin configuration from spreadsheet.")
+
+        logger.info("Fetching admin configuration from spreadsheet.")
 
         reqs = (
-            spreadsheets.values.get(spreadsheetId=config.GOOGLE_SHEETS_ID, range=f"'Admin'!A1:C"),
+            spreadsheets.values.get(spreadsheetId=config.GOOGLE_SHEETS_ID, range="'Admin'!A1:C"),
         )
         result = await aiogoogle.as_service_account(*reqs)
         admin_config = cast(
@@ -85,7 +85,7 @@ async def fetch_random_question() -> SheetRow:
         min_qid, max_qid = [
             int(qid.strip()) + 1 for qid in admin_config["question_range"].split("-")
         ]
-        
+
         reqs = (
             spreadsheets.values.get(
                 spreadsheetId=config.GOOGLE_SHEETS_ID, range=f"'{QA_ID}'!A{min_qid}:C{max_qid}"
@@ -109,7 +109,7 @@ async def fetch_random_question() -> SheetRow:
 async def write_feedback(timestamp, user_id: int, qset: str, qid: str, answer_status: str):
     logger.info(f"Writing feedback for question {qid} from sheet {QA_ID} to spreadsheet.")
 
-    sheet_range = f"'Answers'!A2:E"
+    sheet_range = "'Answers'!A2:E"
 
     async with Aiogoogle(service_account_creds=config.SA_CREDS) as aiogoogle:
         sheets_svc = await aiogoogle.discover("sheets", "v4")
