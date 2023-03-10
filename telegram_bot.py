@@ -40,19 +40,19 @@ class FeedbackStatus(str, Enum):
 
 
 def hide_answer(ans: str) -> str:
-    return MULTIPLE_ANS_REGEX.sub("\g<1> ||\g<2>||\n", ans)
+    return MULTIPLE_ANS_REGEX.sub(r"\g<1> ||\g<2>||\n", ans)
 
 
 def escape_chars(string: str) -> str:
     return (
         string.replace("[", "*[")
         .replace("]", "]*")
-        .replace(".", "\.")
-        .replace("-", "\-")
-        .replace("+", "\+")
-        .replace("(", "\(")
-        .replace(")", "\)")
-        .replace(">", "\>")
+        .replace(".", r"\.")
+        .replace("-", r"\-")
+        .replace("+", r"\+")
+        .replace("(", r"\(")
+        .replace(")", r"\)")
+        .replace(">", r"\>")
     )
 
 
@@ -134,13 +134,13 @@ async def write_feedback(timestamp, user_id: int, qset: str, qid: str, answer_st
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     start_msg = dedent(
-        """
-        Hello 👋🏾 \! I am your friendly flash card bot\.
-        I am here to help you study your bible 📖\. You can interact with me by sending these commands:
-        
-        /start \- Shows these instructions again
-        /question \- Shows you a question\. _\Questions are randomly generated\._
-        """
+        r"""
+    Hello 👋🏾 \!  I am your friendly flash card bot\.
+    I am here to help you study your bible 📖\. You can interact with me by sending these commands:
+
+    /start \- Shows these instructions again
+    /question \- Shows you a question\. _\Questions are randomly generated\._
+    """
     )
 
     logger.info(f"User ({context._user_id}) issued START command.")
