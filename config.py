@@ -1,13 +1,16 @@
 import json
 import logging
 import os
+import warnings
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import TypedDict
 
 from aiogoogle.auth.creds import ServiceAccountCreds
 from dotenv import load_dotenv
+from telegram.warnings import PTBUserWarning
 
+warnings.filterwarnings("ignore", category=PTBUserWarning)
 
 
 load_dotenv()
@@ -19,6 +22,7 @@ TOKEN = os.getenv("TELEGRAM_TOKEN")
 GOOGLE_SHEETS_ID = os.getenv("GOOGLE_SHEETS_ID")
 GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "dev")
+DEVELOPER_CHAT_ID = int(os.getenv("DEVELOPER_CHAT_ID", 6085031336))
 
 _gcp_sa_credentials = json.loads(GOOGLE_APPLICATION_CREDENTIALS)
 SA_CREDS = ServiceAccountCreds(
@@ -42,6 +46,7 @@ logging.basicConfig(
         RotatingFileHandler(LOG_PATH, maxBytes=MAX_LOG_SIZE, backupCount=5),
     ],
 )
+
 
 class AdminConfig(TypedDict):
     question_range: str

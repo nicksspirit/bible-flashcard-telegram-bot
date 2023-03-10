@@ -1,6 +1,9 @@
+import html
+import json
 import logging
 import random
 import re
+import traceback
 from enum import Enum
 from textwrap import dedent
 from typing import cast
@@ -62,6 +65,39 @@ def answer_block(ans: str) -> str:
 
 def question_block(qid: str, question: str) -> str:
     return f"__Q{qid}:__\n{escape_chars(question)}"
+
+
+async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Log the error and send a telegram message to notify the developer."""
+
+    if context.error is None:
+        logger.error("{error} does not exist in chat update event!")
+        return
+
+    # Log the error before we do anything else, so we can see it even if something breaks.
+    logger.error(msg="Exception while handling an update:", exc_info=context.error)
+
+    # traceback.format_exception returns the usual python message about an exception, but as a
+    # list of strings rather than a single string, so we have to join them together.
+
+    tb_list = traceback.format_exception(None, context.error, context.error.__traceback__)
+    tb_string = "".join(tb_list)
+
+    # Build the message with some markup and additional information about what happened.
+    # You might need to add some logic to deal with messages longer than the 4096 character limit.
+    update_str = update.to_dict() if isinstance(update, Update) else str(update)
+    message = (
+        f"💣 An exception was raised while handling an update\n"
+        f"<pre>update = {html.escape(json.dumps(update_str, indent=2, ensure_ascii=False))}"
+        "</pre>\n\n"
+        f"<pre>context.chat_data = {html.escape(str(context.chat_data))}</pre>\n\n"
+        f"<pre>context.user_data = {html.escape(str(context.user_data))}</pre>\n\n"
+        f"<pre>{html.escape(tb_string)}</pre>"
+    )
+
+    await context.bot.send_message(
+        chat_id=config.DEVELOPER_CHAT_ID, text=message, parse_mode=ParseMode.HTML
+    )
 
 
 async def fetch_random_question() -> SheetRow:
@@ -209,6 +245,7 @@ async def reveal_answer_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         for ans in answers:
             hidden_ans = escape_chars(hide_answer(ans))
+
             await update.effective_message.reply_markdown_v2(hidden_ans)
 
         logger.info(f"Revealed {len(answers)} answers to question {qid}.")
@@ -314,7 +351,7 @@ def main():
         },
         fallbacks=[question_handler],
     )
-
+    telegram_app.add_error_handler(error_handler)
     telegram_app.add_handler(start_handler)
     telegram_app.add_handler(conv_handler)
 
