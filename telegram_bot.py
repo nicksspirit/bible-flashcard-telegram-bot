@@ -296,6 +296,7 @@ async def answer_yes_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_timestamp = update.effective_message.date.timestamp()
     user_id = context._user_id
+
     await write_feedback(reply_timestamp, user_id, qset, qid, "Yes")
 
     return ConversationHandler.END
@@ -311,6 +312,7 @@ async def answer_no_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     query = update.callback_query
+
     await query.answer()
 
     qset, qid, _ = query.data.split(":")
@@ -323,6 +325,7 @@ async def answer_no_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_timestamp = update.effective_message.date.timestamp()
     user_id = context._user_id
+
     await write_feedback(reply_timestamp, user_id, qset, qid, "No")
 
     return ConversationHandler.END
