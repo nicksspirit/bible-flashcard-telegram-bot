@@ -248,7 +248,7 @@ async def reveal_answer_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             await update.effective_message.reply_markdown_v2(hidden_ans)
 
-        logger.info(f"Revealed {len(answers)} answers to question {qid}.")
+        logger.debug(f"Revealed {len(answers)} answers to question {qid}.")
 
     else:
         logger.debug(f"Question {qid} from sheet {QA_ID} has a single answer.")
@@ -256,7 +256,7 @@ async def reveal_answer_btn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         question_answer_txt = question_block_ + answer_block(answer)
         await query.edit_message_text(text=question_answer_txt, parse_mode=ParseMode.MARKDOWN_V2)
 
-        logger.info(f"Revealed answer to question {qid}.")
+        logger.debug(f"Revealed answer to question {qid}.")
 
     reply_markup = InlineKeyboardMarkup(
         [
